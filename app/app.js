@@ -1,58 +1,140 @@
 import React, { Component } from 'react';
-import { Navigator } from 'react-native';
-import { connect } from 'react-redux';
-import { StackNavigator } from 'react-navigation';
-import { TabNavigator } from 'react-navigation';
-import MainPage from './view/MainPage';
-import LoginPage from './view/LoginPage';
-import HeadlinePage from './view/HeadlinePage';
-import PublishPage from './view/PublishPage';
-import CirclePage from './view/CirclePage';
-import MinePage from './view/MinePage';
-  const App = TabNavigator({
-    HeadlinePage:{screen:HeadlinePage},
-    PublishPage:{screen:PublishPage},
-    CirclePage:{screen:CirclePage},
-    MinePage:{screen:MinePage},
-  },
-  {
-    tabBarOptions: {
-    activeTintColor: '#e91e63',
-    tabBarPosition:'bottom',
+import { StatusBar } from 'react-native';
+import { StackNavigator, TabNavigator, TabBarBottom } from 'react-navigation';
+
+import TabBarItem from './view/TabBarItem';
+
+import HeadlinePage from './view/Headline/HeadlinePage';
+import PublishPage from './view/Publish/PublishPage';
+import CirclePage from './view/Circle/CirclePage';
+import MinePage from './view/Mine/MinePage';
+
+import CircleInfoPage from './view/Circle/CircleInfoPage';
+
+const lightContentScenes = ['Headline', 'Mine'];
+const Tab = TabNavigator({
+  Headline:{
+      screen:HeadlinePage,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: '看点',
+        tabBarIcon: ({ focused, tintColor }) => (
+          <TabBarItem
+            tintColor={tintColor}
+            focused={focused}
+            normalImage={require('./image/pp_headline.png')}
+            selectedImage={require('./image/pp_headline.png')}
+          />
+        )
+      }),
+      labelStyle:{marginBottom:3},
+      style:{marginBottom:3},
+      tabStyle:{marginBottom:3}
     },
-  });
-  export default ()=><App/>;
-  // export default class App extends Component{
-  //   constructor(props){
-  //     super(props);
-  //
-  //   }
-  /*属性获取指定路由对象的配置信息，从而改变场景的动画或者手势
-  *一个是当前的路由，一个是当前的路由栈
-  *//*
-  configureScene(route,routeStack){
-    return Navigator.SceneConfigs.PushFromRight;
+  Publish:{
+      screen:PublishPage,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: '发布',
+        tabBarIcon: ({ focused, tintColor }) => (
+          <TabBarItem
+            tintColor={tintColor}
+            focused={focused}
+            normalImage={require('./image/pp_publish.png')}
+            selectedImage={require('./image/pp_publish.png')}
+          />
+        )
+      }),
+    },
+  Circle:{
+      screen:CirclePage,
+      navigationOptions: ({ navigation }) => ({
+        tabBarLabel: '圈子',
+        tabBarIcon: ({ focused, tintColor }) => (
+          <TabBarItem
+            tintColor={tintColor}
+            focused={focused}
+            normalImage={require('./image/pp_circle.png')}
+            selectedImage={require('./image/pp_circle.png')}
+          />
+        )
+      }),
+    },
+  Mine:{
+      screen:MinePage,
+     navigationOptions: ({ navigation }) => ({
+        tabBarLabel: '我的',
+        tabBarIcon: ({ focused, tintColor }) => (
+          <TabBarItem
+            tintColor={tintColor}
+            focused={focused}
+            normalImage={require('./image/pp_mine.png')}
+            selectedImage={require('./image/pp_mine.png')}
+          />
+        )
+      }),
+    },
+},
+ {
+  tabBarComponent: TabBarBottom,
+  tabBarPosition: 'bottom',
+  swipeEnabled: false,
+  animationEnabled: true,
+  lazy: true,
+  tabBarOptions: {
+    activeTintColor: '#0bbe06',
+    inactiveTintColor: '#979797',
+    style: { backgroundColor: '#ffffff',paddingBottom:5 },
+  },
+ }
+);
+
+const Navigator = StackNavigator({
+  Tab: { screen: Tab },
+  CircleInfoPage: { screen: CircleInfoPage },
+},
+{
+  navigationOptions: {
+  headerStyle: { backgroundColor: '#ffffff',marginTop:-10, },
+  headerBackTitle: null,
+  headerTintColor: '#333333',
+  showIcon: true,
+  },
+});
+
+export default class App extends Component{
+  constructor(props){
+    super(props);
+    StatusBar.setBarStyle('light-content');
   }
-  //导航栏可以根据指定的路由来渲染场景
-  renderScene(route,navigator){
-    //route里其实就是我们传递的name,page
-    let Page = route.page;
-    return <Page {...route.params} navigator={navigator}/>;
-  }
-  render(){
-    let defaultName = 'MainPage';
-    let defaultPage = MainPage;
-    let initialRoute={
-      name: defaultName,
-      page: defaultPage,
+
+  getCurrentRouteName(navigationState) {
+    if (!navigationState) {
+        return null;
     }
+    const route = navigationState.routes[navigationState.index];
+    // dive into nested navigators
+    if (route.routes) {
+      return getCurrentRouteName(route);
+    }
+    return route.routeName;
+  }
+
+  render(){
     return(
       <Navigator
-        ref={view=>this.navigator=view}
-        initialRoute={initialRoute}//启动时加载的路由,默认initialRouteStack中最后一项
-        configureScene={this.configureScene.bind(this)}
-        renderScene={this.renderScene.bind(this)}
-        />
+        onNavigationStateChange={
+          (prevState, currentState) => {
+             const currentScene = ()=>this.getCurrentRouteName(currentState);
+             const previousScene = ()=>this.getCurrentRouteName(prevState);
+             if (previousScene !== currentScene) {
+               if (lightContentScenes.indexOf(currentScene) >= 0) {
+                 StatusBar.setBarStyle('light-content');
+               } else {
+                 StatusBar.setBarStyle('dark-content');
+              }
+            }
+          }
+        }
+      />
     );
-  }*/
-//}
+  }
+}

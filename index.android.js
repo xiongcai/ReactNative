@@ -9,5 +9,4 @@ import {
   AppRegistry,
 } from 'react-native';
 import RootApp from './app/root';
-//import LoginPage from './app/view/LoginPage';
-AppRegistry.registerComponent('AnimatedTest', () => RootApp);
+AppRegistry.registerComponent('AnimatedTest', () => App);
